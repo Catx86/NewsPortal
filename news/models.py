@@ -3,14 +3,37 @@ from django.contrib.auth.models import User
 
 
 class Author(models.Model):
-    author = models.OneToOneField(User, on_delete=models.CASCADE)
-    author_rating = models.FloatField(default = 0.0)
+    author = models.OneToOneField(User, on_delete=models.CASCADE) # , primary_key=True  ???
+    rate = models.FloatField(default = 0.0)
 
     def update_rating(self):
+
         # суммарный рейтинг каждой статьи автора умножается на 3;
+        qs = Post.objects.filter(author=self).values('rate')
+        qs1_sum_rate = 0
+        for item in qs:
+            qs1_sum_rate += 3 * item.get('rate')
+        print(qs1_sum_rate)
+
         # суммарный рейтинг всех комментариев автора;
+        qs2 = Comment.objects.filter(user=self.author).values('rate')
+        qs2_sum_rate = 0
+        for item in qs2:
+            qs2_sum_rate += item.get('rate')
+        print(qs2_sum_rate)
+
         # суммарный рейтинг всех комментариев к статьям автора.
-        pass
+        qs3 = Post.objects.filter(author=self).values('id')
+        qs3_sum_rate = 0
+        for item in qs3:
+            post_id = item.get('id')
+            qs4 = Comment.objects.filter(post=post_id).values('rate')
+            for item in qs4:
+                qs3_sum_rate += item.get('rate')
+        print(qs3_sum_rate)
+
+        self.rate =  qs1_sum_rate + qs2_sum_rate + qs3_sum_rate
+        self.save()
 
 
 class Category(models.Model):
@@ -31,7 +54,7 @@ class Post(models.Model):
         """Метод возвращает начало статьи (предварительный просмотр) длиной 124 символа, добавляет многоточие в конце"""
         return self.content[:124] + '...'
 
-    # в моделях Comment и Post,
+    # Like, Dislike в моделях Comment и Post
     def like(self):
         self.rate += 1
         self.save()

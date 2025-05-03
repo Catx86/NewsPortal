@@ -1,0 +1,157 @@
+(.venv) PS C:\...\django-projects\NewsPortal>python manage.py shell
+
+>>> from news.models import *
+
+
+# 1. Создать пользователей (с помощью метода  User.objects.create_user('username')
+>>>
+someguy = User.objects.create_user(username='someguy')
+schreibikus = User.objects.create_user('schreibikus')
+autondile = User.objects.create_user('autondile')
+
+>>> User.objects.create_user('someone')
+<User: someone>
+
+>>> User.objects.all()               
+<QuerySet [<User: admin>, <User: schreibikus>, <User: someguy>, <User: autondile>, <User: someone>]>
+
+
+# 2. Создать два объекта модели Author, связанные с пользователями.
+>>>
+auth1 = Author.objects.create(author=autondile)
+auth2 = Author.objects.create(author=schreibikus)
+
+
+# 3. Добавить 4 категории в модель Category.
+>>>
+cat1 = Category.objects.create(category='auto')
+cat2 = Category.objects.create(category='moto')
+cat3 = Category.objects.create(category='nature')
+cat4 = Category.objects.create(category='plants')
+
+>>> Category.objects.all()                            
+<QuerySet [<Category: Category object (1)>, <Category: Category object (2)>, <Category: Category object (3)>, <Category: Category object (4)>]>
+
+# 4. Добавить 2 статьи и 1 новость.
+>>>
+new1 = Post.objects.create(author=auth1, title='new1_title', content='new1_content')
+art1 = Post.objects.create(author=auth1, is_article=True, title='art1_title', content='art1_content')
+art2 = Post.objects.create(author=auth2, is_article=True, title='art2_title', content='art2_content')
+
+>>> Post.objects.all()                                                                                    
+<QuerySet [<Post: Post object (1)>, <Post: Post object (2)>, <Post: Post object (3)>]>
+
+
+# 5. Присвоить им категории (как минимум в одной статье/новости должно быть не меньше 2 категорий).
+>>>
+post_cat1 = PostCategory.objects.create(post=new1, category=cat1)
+post_cat2 = PostCategory.objects.create(post=art1, category=cat3)
+post_cat3 = PostCategory.objects.create(post=art2, category=cat3)
+post_cat4 = PostCategory.objects.create(post=art2, category=cat4)
+
+>>> PostCategory.objects.all()                                        
+<QuerySet [<PostCategory: PostCategory object (1)>, <PostCategory: PostCategory object (2)>, <PostCategory: PostCategory object (3)>, <PostCategory: PostCategory object (4)>]>
+
+
+# 6. Создать как минимум 4 комментария к разным объектам модели Post (в каждом объекте должен быть как минимум один комментарий).
+>>>
+comm1 = Comment.objects.create(post=new1, user=someguy, comment='Отличная новость!')
+comm2 = Comment.objects.create(post=art1, user=someguy, comment='Полезная статья! Спасибо автору!')
+comm3 = Comment.objects.create(post=art2, user=autondile, comment='Да! Есть над чем подумать!')
+comm4 = Comment.objects.create(post=art2, user=schreibikus, comment='Еще бы, так и есть.')
+
+>>> Comment.objects.all()                                                                               
+<QuerySet [<Comment: Comment object (1)>, <Comment: Comment object (2)>, <Comment: Comment object (3)>, <Comment: Comment object (4)>]>
+
+
+# 7. Применяя функции like() и dislike() к статьям/новостям и комментариям, скорректировать рейтинги этих объектов.
+>>>
+comm1.like()
+comm1.like()
+comm1.like()          
+
+comm2.like() 
+comm2.like()
+
+comm3.like()
+comm3.like()
+comm3.like()
+comm3.like()
+ 
+comm4.like() 
+comm4.like() 
+comm4.like() 
+comm4.like() 
+comm4.like() 
+
+
+# 8. Обновить рейтинги пользователей.
+
+>>> auth1 = Author.objects.get(id=1) 
+>>> auth1
+<Author: Author object (1)>
+>>> auth1.author
+<User: autondile>
+>>> auth1.update_rating()
+
+
+>>> auth2 = Author.objects.get(id=2) 
+<Author: Author object (2)>
+>>> auth2
+<Author: Author object (2)>
+>>> auth2.author
+<User: schreibikus>
+>>> auth2.update_rating()
+
+
+# 9.  Вывести username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
+>>> Author.objects.filter().order_by('-rate').values('author_id', 'rate').first()          
+{'author_id': 10, 'rate': 23.0}
+
+>>> User.objects.get(id=10)                                                          
+<User: schreibikus>
+
+
+# 10. Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
+# Находим лучшую статью по рейтингу
+>>> Post.objects.filter(is_article=1).order_by('-rate').values('id', 'rate').first()
+{'id': 3, 'rate': 3.0}
+
+>>> p = Post.objects.get(id=3)
+
+>>> print(p.date_time_out)
+2025-04-19 16:40:14.602986
+>>> print(p.author.author) 
+schreibikus
+>>> print(p.rate) 
+3.0
+>>> print(p.title) 
+art2_title
+>>> p.preview()
+'art2_content...'
+
+
+# 11. Вывести все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
+>>> Comment.objects.filter(post_id=p.id)  
+<QuerySet [<Comment: Comment object (3)>, <Comment: Comment object (4)>]>
+
+>>> c3 = Comment.objects.get(id=3)
+>>> c4 = Comment.objects.get(id=4)
+
+>>> print(c3.date_time_out) 
+2025-04-19 21:36:18.259310
+>>> print(c3.user)   
+autondile
+>>> print(c3.rate) 
+4.0
+>>> print (c3.comment) 
+Да! Есть над чем подумать!
+
+>>> print (c4.date_time_out)   
+2025-04-19 21:40:56.243600
+>>> print (c4.user)          
+schreibikus
+>>> print (c4.rate) 
+5.0
+>>> print (c4.comment) 
+Еще бы, так и есть.
