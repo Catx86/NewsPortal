@@ -1,0 +1,17 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+<!-- Подключаем файл с нашим фильтром -->
+{% load custom_filters %}
+
+<!-- Название у нас будет New -->
+{% block title %}
+New
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим заголовок, дату публикации, текст, идентификатор которой был передан в url -->
+{% block content %}
+    <h2>{{ new.title|censor }}</h2>
+    <h5>Дата публикации: {{ new.date_time_out|date:'d M Y' }},  Автор: {{ new.author.author }}, Рейтинг: {{ new.rate }}</h5>
+    <h6>{{ new.content|censor }}</h6>
+{% endblock content %}
