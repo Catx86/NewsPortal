@@ -1,0 +1,27 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+Поиск новостей
+{% endblock %}
+
+{% block content %}
+    <h2>Поиск новостей</h2>
+
+    <form method="get">  {# метод GET, чтобы параметры отображались в URL #}
+        {{ form.as_p }}  {# Отображаем поля формы в виде параграфов #}
+        <button type="submit">Поиск</button>
+    </form>
+
+    {% if news %}  {# Проверяем, есть ли результаты #}
+        <h3>Результаты поиска:</h3>
+        <ul>
+            {% for item in news %}
+                <li> {{ item.title }} - {{ item.date_time_out }} - {{ item.author }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ничего не найдено.</p>
+    {% endif %}
+
+{% endblock %}

@@ -6,6 +6,9 @@ class Author(models.Model):
     author = models.OneToOneField(User, on_delete=models.CASCADE) # , primary_key=True  ???
     rate = models.FloatField(default = 0.0)
 
+    def __str__(self):
+        return self.author.username
+
     def update_rating(self):
 
         # суммарный рейтинг каждой статьи автора умножается на 3;
@@ -39,6 +42,9 @@ class Author(models.Model):
 class Category(models.Model):
     category = models.CharField(max_length = 255, unique = True)
 
+    def __str__(self):
+        return f'{self.category}'
+
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # связь «один ко многим» с моделью Author;
@@ -49,6 +55,9 @@ class Post(models.Model):
     title = models.CharField(max_length=255) # заголовок статьи/новости;
     content = models.TextField() # текст статьи/новости;
     rate = models.FloatField(default=0.0) # рейтинг статьи/новости.
+
+    def __str__(self):
+        return f'{self.title.title()}: {self.content[:20]}'
 
     def preview(self):
         """Метод возвращает начало статьи (предварительный просмотр) длиной 124 символа, добавляет многоточие в конце"""

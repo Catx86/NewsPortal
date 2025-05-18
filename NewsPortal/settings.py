@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Подключаем еще приложения
     'django.contrib.sites',
     'django.contrib.flatpages',
+    'django_filters',
 
     # Наше приложение
     'news.apps.NewsConfig',
